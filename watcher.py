@@ -20,7 +20,7 @@ def getVividLowestPrices():
         'Sec-Fetch-User': '?1'
     }) # Vivid returns 403 Forbidden without these headers
 
-    url = 'https://www.vividseats.com/hermes/api/v1/productions?performerId=173&includeIpAddress=true&radius=80450&pageSize=50'
+    url = 'https://www.vividseats.com/hermes/api/v1/productions?performerId=173&pageSize=50'
     response = s.get(url)
     if response.status_code != 200:
         print('Failed to get content at url:', url)
@@ -32,7 +32,7 @@ def getVividLowestPrices():
 
 # Stores ticket prices in file for future reference
 def updateTicketFile(event):
-    filePath = "ticketFiles/e_" + str(event['id'])
+    filePath = "ticketFiles/e_" + str(event['id'] + ".json")
     newPrice = {
         'date': str(datetime.now()),
         'minPrice': event['minPrice']
