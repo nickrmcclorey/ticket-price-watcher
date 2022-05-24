@@ -4,7 +4,7 @@ import json
 import os
 
 # return array of events with info such as lowest ticket price
-def getVividLowestPrices():
+def getVividLowestPrices(performerId):
     s = requests.Session()
     s.headers.update({
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
@@ -20,7 +20,7 @@ def getVividLowestPrices():
         'Sec-Fetch-User': '?1'
     }) # Vivid returns 403 Forbidden without these headers
 
-    url = 'https://www.vividseats.com/hermes/api/v1/productions?performerId=173&pageSize=50'
+    url = 'https://www.vividseats.com/hermes/api/v1/productions?pageSize=50&performerId=' + str(performerId)
     response = s.get(url)
     if response.status_code != 200:
         print('Failed to get content at url:', url)
@@ -31,8 +31,7 @@ def getVividLowestPrices():
     return j['items']
 
 # Stores ticket prices in file for future reference
-def updateTicketFile(event):
-    filePath = "ticketFiles/e_" + str(event['id'] + ".json")
+def updateTicketFile(event, filePath):
     newPrice = {
         'date': str(datetime.now()),
         'minPrice': event['minPrice']
@@ -51,7 +50,39 @@ def updateTicketFile(event):
         json.dump(event, file)
     
 
+
+
 if __name__ == '__main__':
-    events = getVividLowestPrices()
-    for event in events:
-        updateTicketFile(event)
+    events = []
+    performerIds = {
+        "lions": 238,
+        "reds": 173,
+        "bengals": 172
+    }
+
+    eventMap = {}
+    if os.path.exists('ticketFiles_map.json'):
+        with open('ticketFiles_map.json', 'r') as file:
+            eventMap = json.loads(file.read())
+
+    for teamName, performerId in performerIds.items():
+        events = getVividLowestPrices(performerId)
+
+        if performerId not in eventMap:
+            eventMap[performerId] = {
+                'team': teamName,
+                'games': []
+            }
+
+        for event in events:
+            filePath = 'ticketFiles/' + teamName + '/e_' + str(event['id']) + '.json'
+            dirPath = os.path.dirname(filePath)
+
+            if not os.path.exists(dirPath):
+                os.mkdir(dirPath)
+
+            updateTicketFile(event, filePath)
+            eventMap[performerId]['games'].append(event['id'])
+
+    with open('ticketFiles_map.json', 'w') as file:
+        json.dump(eventMap, file)

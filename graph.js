@@ -1,8 +1,8 @@
 let eventDate = document.getElementById('event_date')
 let eventTitle = document.getElementById('event_title')
 
-function loadTicketGraph() {
-    fetch('/ticketFiles/e_3684275.json')
+function loadTicketGraph(event) {
+    fetch('/ticketFiles/reds/e_' + event.target.textContent + '.json')
         .then(response => response.json())
         .then(createGraph);
 }
@@ -31,4 +31,32 @@ function createGraph(ticket) {
     eventTitle.textContent = ticket.name
 }
 
-loadTicketGraph()
+function loadGames() {
+    fetch('/ticketFiles_map.json')
+        .then(response => response.json())
+        .then(buildGameList)
+}
+
+function buildGameList(teamsData) {
+    // console.log(teamsData)
+    let gameDiv = document.getElementById('gameList')
+    let innerHTML = '';
+    for (teamId in teamsData) {
+        let teamName = teamsData[teamId].team
+        let gameIds = teamsData[teamId].games
+        
+        innerHTML += '<div><h2>' + teamName + '</h2><ul>'
+        for (gameId of gameIds) {
+            innerHTML += '<li>' + gameId + "</li>"
+        }
+        innerHTML += '</ul></div>'
+    }
+    gameDiv.innerHTML = innerHTML
+
+    for (let element of document.getElementsByTagName('li')) {
+        element.addEventListener('click', loadTicketGraph, false)
+    }
+}
+
+loadGames()
+
