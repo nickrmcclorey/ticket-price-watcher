@@ -49,6 +49,39 @@ def updateTicketFile(event, filePath):
     with open(filePath, 'w') as file:
         json.dump(event, file)
     
+def updateTeamFile(events, teamName, teamId):
+    output = {
+        'teamName': teamName,
+        'games': {}
+    }
+
+    if os.path.exists('ticketFiles/' + teamName + '.json'):
+        with open('ticketFiles/' + teamName + '.json', 'r') as file:
+            g = json.load(file)
+            output['games'] = g['games']
+    
+    for event in events:
+        gameId = str(event['id'])
+        outputGame = {
+            'date': event['utcDate'],
+            'venue': event['venue']['name'],
+            'title': event['name'],
+            'ticketPriceHistory': []
+        }
+
+        if gameId in output['games']:
+            outputGame['ticketPriceHistory'] = output['games'][gameId]['ticketPriceHistory']
+            
+        outputGame['ticketPriceHistory'].append({
+            'date': str(datetime.now()),
+            'minPrice': event['minPrice']
+        })
+
+        output['games'][gameId] = outputGame
+    
+    with open('ticketFiles/' + teamName + '.json', 'w') as file:
+        json.dump(output, file)
+
 
 
 
@@ -69,20 +102,9 @@ if __name__ == '__main__':
         events = getVividLowestPrices(performerId)
 
         if performerId not in eventMap:
-            eventMap[performerId] = {
-                'team': teamName,
-                'games': []
-            }
+            eventMap[teamName] = performerId
 
-        for event in events:
-            filePath = 'ticketFiles/' + teamName + '/e_' + str(event['id']) + '.json'
-            dirPath = os.path.dirname(filePath)
-
-            if not os.path.exists(dirPath):
-                os.mkdir(dirPath)
-
-            updateTicketFile(event, filePath)
-            eventMap[performerId]['games'].append(event['id'])
+        updateTeamFile(events, teamName, str(performerId))
 
     with open('ticketFiles_map.json', 'w') as file:
         json.dump(eventMap, file)

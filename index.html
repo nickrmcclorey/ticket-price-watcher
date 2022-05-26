@@ -1,9 +1,14 @@
 <html>
     <body>
-        <div id="gameList"></div>
+        <div>
+          <select name="team" id="teamSelect"></select>
+          <div>
+            <ul id="gameList"></ul>
+          </div>
+        </div>
         <div id="event">
           <h1 id="event_title"></h1>
-          <h1 id="event_date"></h1>
+          <h2 id="event_date"></h2>
           <div id="graph"></div>
         </div>
     </body>
@@ -11,13 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/danfojs-nightly@1.0.2/lib/bundle.js"></script>
     <script src="/graph.js"></script>
     <style>
-      #gameList {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-      }
 
       #gameList li:hover {
         cursor: pointer;
+        color:brown;
       }
     </style>
 
