@@ -29,25 +29,6 @@ def getVividLowestPrices(performerId):
     j = json.loads(response.content.decode('utf-8'))
 
     return j['items']
-
-# Stores ticket prices in file for future reference
-def updateTicketFile(event, filePath):
-    newPrice = {
-        'date': str(datetime.now()),
-        'minPrice': event['minPrice']
-    }
-
-    # if event has previously recorded data, we load that in
-    if os.path.exists(filePath):
-        with open(filePath, 'r') as file:
-            event = json.load(file)
-    else:
-        event['minPriceHistory'] = []
-
-    event['minPriceHistory'].append(newPrice)
-
-    with open(filePath, 'w') as file:
-        json.dump(event, file)
     
 def updateTeamFile(events, teamName, teamId):
     output = {
@@ -71,18 +52,18 @@ def updateTeamFile(events, teamName, teamId):
 
         if gameId in output['games']:
             outputGame['ticketPriceHistory'] = output['games'][gameId]['ticketPriceHistory']
-            
-        outputGame['ticketPriceHistory'].append({
-            'date': str(datetime.now()),
-            'minPrice': event['minPrice']
-        })
+        priceHistory = outputGame['ticketPriceHistory']
 
-        output['games'][gameId] = outputGame
-    
+        if len(priceHistory) > 2 and priceHistory[-1]['minPrice'] == priceHistory[-2]['minPrice']:
+            priceHistory[-1]['date'] = str(datetime.now())
+        else:
+            priceHistory.append({
+                'date': str(datetime.now()),
+                'minPrice': event['minPrice']
+            })
+
     with open('ticketFiles/' + teamName + '.json', 'w') as file:
         json.dump(output, file)
-
-
 
 
 if __name__ == '__main__':

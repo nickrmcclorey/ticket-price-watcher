@@ -50,14 +50,13 @@ function loadGamesForTeam(event) {
     fetch('/ticketFiles/' + teamName + '.json')
         .then(response => response.json())
         .then(team => {
-            let innerHTML = '<div><h2>' + teamName + '</h2><ul>'
 
             let ids = organizeGameIds(team.games)
             for (let gameId of ids) {
                 let game = team.games[gameId]
                 let li = document.createElement('li')
                 li.textContent = new Date(game.date).toDateString() + ' ' + game.title
-                li.addEventListener('click', () => createGraph(game))
+                li.addEventListener('click', () => createGraph(game), false)
                 ul.appendChild(li)
             }
         })
@@ -78,7 +77,6 @@ function organizeGameIds(games) {
         }
     
         chronologicalIds.push(earliestGameId)
-        console.log(earliestGameId)
         ids = ids.filter(x => x != earliestGameId)
     }
     return chronologicalIds
